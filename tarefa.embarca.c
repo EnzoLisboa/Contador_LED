@@ -71,7 +71,7 @@ void imprimir_desenho(Matriz_leds_config configuracao, PIO pio, uint sm){
 }
 
 //Pino do led vermelho
-#define LED_VERMELHO_PIN 11
+#define LED_VERMELHO_PIN 13
 
 //Pinos para leitura dos botões
 #define BUTTON_A_PIN 5

@@ -183,7 +183,7 @@
     [ "r2:2", "pico:GND.1", "gold", [ "h0", "v37.2" ] ],
     [ "btn1:2.r", "r3:1", "gold", [ "v0" ] ],
     [ "r3:2", "pico:GND.2", "gold", [ "h0", "v85.2" ] ],
-    [ "r1:2", "pico:GP11", "green", [ "v0" ] ],
+    [ "r1:2", "pico:GP13", "green", [ "v0" ] ],
     [ "led1:C", "pico:GND.4", "green", [ "v0" ] ]
   ],
   "dependencies": {}

@@ -1,4 +1,4 @@
 [wokwi]
 version = 1
-firmware = 'build/tarefa_embarca.uf2'
-elf = 'tarefa_embarca.elf'
+firmware = 'build/Contador_LED.uf2'
+elf = 'Contador_LED.elf'

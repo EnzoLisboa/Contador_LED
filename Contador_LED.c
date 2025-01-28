@@ -116,7 +116,7 @@ void configurar_botao(uint botao)
     gpio_pull_up(botao);
 }
 
-//Função para desligar a matriz de leds e bootsel
+//Função para desligar os leds e entrar em bootsel
 void desligar(PIO pio, uint sm)
 {
         Matriz_leds_config matriz_desl = {

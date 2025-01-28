@@ -26,37 +26,37 @@ set(PICO_BOARD pico_w CACHE STRING "Board type")
 include(pico_sdk_import.cmake)
 
 # Nome do projeto
-project(tarefa_embarca C CXX ASM)
+project(Contador_LED C CXX ASM)
 
 # Inicializa o Raspberry Pi Pico SDK
 pico_sdk_init()
 
 # Define o executável
-add_executable(tarefa_embarca tarefa.embarca.c)
+add_executable(Contador_LED Contador_LED.c)
 
 # Configurações de nome e versão do programa
-pico_set_program_name(tarefa_embarca "tarefa_embarca")
-pico_set_program_version(tarefa_embarca "0.1")
+pico_set_program_name(Contador_LED "Contador_LED")
+pico_set_program_version(Contador_LED "0.1")
 
 # Gera o cabeçalho PIO a partir do arquivo .pio
-pico_generate_pio_header(tarefa_embarca ${CMAKE_CURRENT_LIST_DIR}/pio_matrix.pio)
+pico_generate_pio_header(Contador_LED ${CMAKE_CURRENT_LIST_DIR}/pio_matrix.pio)
 
 # Habilita entrada/saída por UART/USB
-pico_enable_stdio_uart(tarefa_embarca 1)
-pico_enable_stdio_usb(tarefa_embarca 1)
+pico_enable_stdio_uart(Contador_LED 1)
+pico_enable_stdio_usb(Contador_LED 1)
 
 # Vincula as bibliotecas necessárias ao programa
-target_link_libraries(tarefa_embarca
+target_link_libraries(Contador_LED
     pico_stdlib
     hardware_pio  # Biblioteca de suporte para PIO
 )
 
 # Inclui os diretórios padrão e adicionais no projeto
-target_include_directories(tarefa_embarca PRIVATE
+target_include_directories(Contador_LED PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
 )
 
 # Gera os arquivos de saída adicionais (como .uf2)
-pico_add_extra_outputs(tarefa_embarca)
+pico_add_extra_outputs(Contador_LED)
 
 

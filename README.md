@@ -10,7 +10,7 @@ Este projeto implementa um contador de 1 a 9 utilizando uma matriz de LEDs contr
 - **Botões de controle**:
   - **Botão A**: Incrementa o contador.
   - **Botão B**: Decrementa o contador.
-  - **Botão C**: Desliga a matriz de LEDs e entra no modo de bootloader.
+  - **Botão C**: Desliga os LEDs e entra no modo de bootsel.
 - **LED indicador**: Um LED vermelho pisca enquanto o contador está ativo.
 
 ## Estrutura do Código

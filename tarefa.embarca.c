@@ -97,7 +97,7 @@ void gpio_irq_handler(uint gpio, uint32_t events)
 //Função para piscar o led
 void piscar_led()
 {
-    //Inicializando o led vermelho
+    //Inicializa o led vermelho
     gpio_init(LED_VERMELHO_PIN);
     gpio_set_dir(LED_VERMELHO_PIN, GPIO_OUT);
     // Liga o LED
@@ -116,12 +116,7 @@ void configurar_botao(uint botao)
     gpio_pull_up(botao);
 }
 
-//Função para modo bootsel
-void reiniciar_para_bootsel() {
-    reset_usb_boot(0, 0);
-}
-
-//Função para desligar a matriz de leds
+//Função para desligar a matriz de leds e bootsel
 void desligar(PIO pio, uint sm)
 {
         Matriz_leds_config matriz_desl = {
@@ -135,6 +130,8 @@ void desligar(PIO pio, uint sm)
     };
     imprimir_desenho(matriz_desl, pio, sm);
     gpio_put(LED_VERMELHO_PIN, 0);
+    sleep_ms(200);
+    reset_usb_boot(0, 0);
 }
 
 //Funções para imprimir os números
@@ -311,12 +308,10 @@ int main()
 
         if (numero > 9) {numero--;} //Limita o numero
         if (numero < 0) {numero++;} //Limita o numero
-
+        
         if (modo==true) //BUTTON C desliga os leds e entra em bootsel
         {
             desligar(pio, sm);
-            sleep_ms(200);
-            reiniciar_para_bootsel();
         }
 
         // Chamando as funções de acordo com o valor de numero

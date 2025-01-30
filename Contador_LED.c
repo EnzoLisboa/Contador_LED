@@ -12,15 +12,15 @@
 // Pino que realizará a comunicação do microcontrolador com a matriz
 #define OUT_PIN 7
 
-//Pino do led
+// Pino do led
 #define LED_VERMELHO_PIN 13
 
-//Pinos dos botões
+// Pinos dos botões
 #define BUTTON_A_PIN 5
 #define BUTTON_B_PIN 6
 #define BUTTON_C_PIN 22
 
-//Variaveis globais
+// Variáveis globais
 int numero = 0;
 bool modo = false;
 static volatile uint32_t last_time = 0; // Armazena o tempo do último evento (em microssegundos)
@@ -78,7 +78,7 @@ void imprimir_desenho(Matriz_leds_config configuracao, PIO pio, uint sm){
     }
 }
 
-//Função de interrupção
+// Função de interrupção
 void gpio_irq_handler(uint gpio, uint32_t events)
 {
     // Obtém o tempo atual em microssegundos
@@ -87,14 +87,15 @@ void gpio_irq_handler(uint gpio, uint32_t events)
     if (current_time - last_time > 200000) // 200 ms de debouncing
     {
         last_time = current_time; // Atualiza o tempo do último evento
+
+        // Verifica qual botão foi pressionado
         if (gpio == BUTTON_A_PIN){numero++;}
         else if (gpio == BUTTON_B_PIN){numero--;}
         else if (gpio == BUTTON_C_PIN){modo=!modo;}
-        
     }
 }
 
-//Função para piscar o led
+// Função para piscar o led
 void piscar_led()
 {
     //Inicializa o led vermelho
@@ -108,7 +109,7 @@ void piscar_led()
     sleep_ms(100); // Espera 100 milissegundos
 }
 
-//Função para configurar os botões
+// Função para configurar os botões
 void configurar_botao(uint botao)
 {
     gpio_init(botao);
@@ -116,7 +117,7 @@ void configurar_botao(uint botao)
     gpio_pull_up(botao);
 }
 
-//Função para desligar os leds e entrar em bootsel
+// Função para desligar os leds e entrar em bootsel
 void desligar(PIO pio, uint sm)
 {
         Matriz_leds_config matriz_desl = {
@@ -134,7 +135,7 @@ void desligar(PIO pio, uint sm)
     reset_usb_boot(0, 0);
 }
 
-//Funções para imprimir os números
+// Funções para imprimir os números
 void n_zero(PIO pio, uint sm)
 {
     Matriz_leds_config matriz_zero = {
@@ -288,17 +289,17 @@ int main()
 {
     stdio_init_all();
 
-    //Inicializando os botões
+    // Inicializando os botões
     configurar_botao(BUTTON_A_PIN);
     configurar_botao(BUTTON_B_PIN);
     configurar_botao(BUTTON_C_PIN);
 
-    //Verifica se o botão foi pressionado
+    // Interrompe caso o botão for pressionado
     gpio_set_irq_enabled_with_callback(BUTTON_A_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
     gpio_set_irq_enabled_with_callback(BUTTON_B_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
     gpio_set_irq_enabled_with_callback(BUTTON_C_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
 
-    //Variáveis para controle da matriz
+    // Variáveis para controle da matriz
     PIO pio = pio0;
     uint sm = configurar_matriz(pio);
     
@@ -306,15 +307,15 @@ int main()
     {   
         piscar_led();   //Ativa a função de piscar o led
 
-        if (numero > 9) {numero--;} //Limita o numero
-        if (numero < 0) {numero++;} //Limita o numero
+        if (numero > 9) {numero--;} //Limita o número
+        if (numero < 0) {numero++;} //Limita o número
         
         if (modo==true) //BUTTON C desliga os leds e entra em bootsel
         {
             desligar(pio, sm);
         }
 
-        // Chamando as funções de acordo com o valor de numero
+        // Chamando as funções de acordo com o valor do número
         switch(numero) {
             case 1:
                 n_um(pio, sm);

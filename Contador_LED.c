@@ -105,7 +105,11 @@ void gpio_irq_handler(uint gpio, uint32_t events)
             if (numero < 0) {numero++;} //Limita o número
             printf("Número: %d\n", numero);
         }
-        else if (gpio == BUTTON_C_PIN){modo=!modo;}
+        else if (gpio == BUTTON_C_PIN)
+        {
+            printf("Desligando e entrando em modo bootsel\n");
+            modo=!modo;
+        }
     }
 }
 

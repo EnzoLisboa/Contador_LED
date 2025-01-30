@@ -35,15 +35,6 @@ O código está organizado da seguinte forma:
   - Inicializa os botões e a matriz de LEDs.
   - Entra em um loop infinito onde verifica o estado dos botões e exibe o número correspondente na matriz de LEDs.
 
-## Como Usar
-
-1. **Compilação**: Compile o código utilizando o ambiente de desenvolvimento apropriado para o Raspberry Pi Pico (por exemplo, o SDK do Raspberry Pi Pico).
-2. **Upload**: Carregue o código compilado no Raspberry Pi Pico.
-3. **Operação**:
-   - Pressione o **Botão A** para incrementar o contador.
-   - Pressione o **Botão B** para decrementar o contador.
-   - Pressione o **Botão C** para desligar a matriz de LEDs e entrar no modo de bootsel.
-
 ## Requisitos
 
 - **Hardware**:
@@ -55,3 +46,16 @@ O código está organizado da seguinte forma:
 - **Software**:
   - SDK do Raspberry Pi Pico.
   - Compilador compatível com C/C++.
+
+## Como Usar
+
+1. **Compilação**: Compile o código utilizando o ambiente de desenvolvimento apropriado para o Raspberry Pi Pico (por exemplo, o SDK do Raspberry Pi Pico).
+2. **Upload**: Carregue o código compilado no Raspberry Pi Pico.
+3. **Operação**:
+  - Pressione o **Botão A** para incrementar o contador.
+  - Pressione o **Botão B** para decrementar o contador.
+  - Pressione o **Botão C** para desligar a matriz de LEDs e entrar no modo de bootsel.
+
+## Demonstração
+
+[Assista ao vídeo da demonstração](https://www.dropbox.com/scl/fi/9q4t34pn7qnmec5nol9sn/Tarefa_1_Aula_S-ncrona_27-01.mp4?rlkey=lci85t6ombofage9ibbjecqoi&st=jopiursn&dl=0)

@@ -20,10 +20,14 @@
 #define BUTTON_B_PIN 6
 #define BUTTON_C_PIN 22
 
+// Definir constantes para os valores RGB
+#define RGB_OFF {0.0, 0.0, 0.0}
+#define RGB_BLUE {0.0, 0.0, 1.0}
+
 // Variáveis globais
-int numero = 0;
-bool modo = false;
-static volatile uint32_t last_time = 0; // Armazena o tempo do último evento (em microssegundos)
+int numero = 0; // Inicia o contador em 0
+bool modo = false; // Inicia sem modo bootsel
+static volatile uint32_t last_time = 0; // Define o tempo inicial (em microssegundos)
 
 // Funções para matriz de LEDs
 uint32_t gerar_binario_cor(double red, double green, double blue)
@@ -89,8 +93,18 @@ void gpio_irq_handler(uint gpio, uint32_t events)
         last_time = current_time; // Atualiza o tempo do último evento
 
         // Verifica qual botão foi pressionado
-        if (gpio == BUTTON_A_PIN){numero++;}
-        else if (gpio == BUTTON_B_PIN){numero--;}
+        if (gpio == BUTTON_A_PIN)
+        {
+            numero++;
+            if (numero > 9) {numero--;} //Limita o número
+            printf("Número: %d\n", numero);
+        }
+        else if (gpio == BUTTON_B_PIN)
+        {
+            numero--;
+            if (numero < 0) {numero++;} //Limita o número
+            printf("Número: %d\n", numero);
+        }
         else if (gpio == BUTTON_C_PIN){modo=!modo;}
     }
 }
@@ -98,7 +112,7 @@ void gpio_irq_handler(uint gpio, uint32_t events)
 // Função para piscar o led
 void piscar_led()
 {
-    //Inicializa o led vermelho
+    // Inicializa o led vermelho
     gpio_init(LED_VERMELHO_PIN);
     gpio_set_dir(LED_VERMELHO_PIN, GPIO_OUT);
     // Liga o LED
@@ -120,14 +134,12 @@ void configurar_botao(uint botao)
 // Função para desligar os leds e entrar em bootsel
 void desligar(PIO pio, uint sm)
 {
-        Matriz_leds_config matriz_desl = {
-        //   Coluna 0         Coluna 1         Coluna 2         Coluna 3         Coluna 4
-        // R    G    B      R    G    B      R    G    B      R    G    B      R    G    B
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, // Linha 0
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, // Linha 1
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, // Linha 2
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, // Linha 3
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, // Linha 4
+    Matriz_leds_config matriz_desl = {
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_OFF, RGB_OFF}, // Linha 0
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_OFF, RGB_OFF}, // Linha 1
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_OFF, RGB_OFF}, // Linha 2
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_OFF, RGB_OFF}, // Linha 3
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_OFF, RGB_OFF}, // Linha 4
     };
     imprimir_desenho(matriz_desl, pio, sm);
     gpio_put(LED_VERMELHO_PIN, 0);
@@ -135,154 +147,131 @@ void desligar(PIO pio, uint sm)
     reset_usb_boot(0, 0);
 }
 
+// Função genérica para imprimir números
+void imprimir_numero(PIO pio, uint sm, Matriz_leds_config matriz)
+{
+    imprimir_desenho(matriz, pio, sm);
+}
+
 // Funções para imprimir os números
 void n_zero(PIO pio, uint sm)
 {
     Matriz_leds_config matriz_zero = {
-        //   Coluna 0         Coluna 1         Coluna 2         Coluna 3         Coluna 4
-        // R    G    B      R    G    B      R    G    B      R    G    B      R    G    B
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 0
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 1
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 2
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 3
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 4
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 0
+        {RGB_OFF, RGB_BLUE, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 1
+        {RGB_OFF, RGB_BLUE, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 2
+        {RGB_OFF, RGB_BLUE, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 3
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 4
     };
-    
-    imprimir_desenho(matriz_zero, pio, sm);
+    imprimir_numero(pio, sm, matriz_zero);
 }
 
 void n_um(PIO pio, uint sm)
 {
     Matriz_leds_config matriz_um = {
-        //   Coluna 0         Coluna 1         Coluna 2         Coluna 3         Coluna 4
-        // R    G    B      R    G    B      R    G    B      R    G    B      R    G    B
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, // Linha 0
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, // Linha 1
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, // Linha 2
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, // Linha 3
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 4
+        {RGB_OFF, RGB_OFF, RGB_BLUE, RGB_OFF, RGB_OFF}, // Linha 0
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_OFF, RGB_OFF}, // Linha 1
+        {RGB_OFF, RGB_OFF, RGB_BLUE, RGB_OFF, RGB_OFF}, // Linha 2
+        {RGB_OFF, RGB_OFF, RGB_BLUE, RGB_OFF, RGB_OFF}, // Linha 3
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 4
     };
-    
-    imprimir_desenho(matriz_um, pio, sm);
+    imprimir_numero(pio, sm, matriz_um);
 }
 
 void n_dois(PIO pio, uint sm)
 {
     Matriz_leds_config matriz_dois = {
-        //   Coluna 0         Coluna 1         Coluna 2         Coluna 3         Coluna 4
-        // R    G    B      R    G    B      R    G    B      R    G    B      R    G    B
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 0
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 1
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 2
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, // Linha 3
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 4
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 0
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 1
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 2
+        {RGB_OFF, RGB_BLUE, RGB_OFF, RGB_OFF, RGB_OFF}, // Linha 3
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 4
     };
-    
-    imprimir_desenho(matriz_dois, pio, sm);
+    imprimir_numero(pio, sm, matriz_dois);
 }
 
 void n_tres(PIO pio, uint sm)
 {
     Matriz_leds_config matriz_tres = {
-        //   Coluna 0         Coluna 1         Coluna 2         Coluna 3         Coluna 4
-        // R    G    B      R    G    B      R    G    B      R    G    B      R    G    B
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 0
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 1
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 2
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 3
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 4
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 0
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 1
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 2
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 3
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 4
     };
-    
-    imprimir_desenho(matriz_tres, pio, sm);
+    imprimir_numero(pio, sm, matriz_tres);
 }
 
 void n_quatro(PIO pio, uint sm)
 {
     Matriz_leds_config matriz_quatro = {
-        //   Coluna 0         Coluna 1         Coluna 2         Coluna 3         Coluna 4
-        // R    G    B      R    G    B      R    G    B      R    G    B      R    G    B
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 0
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 1
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 2
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 3
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 4
+        {RGB_OFF, RGB_BLUE, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 0
+        {RGB_OFF, RGB_BLUE, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 1
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 2
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 3
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 4
     };
-    
-    imprimir_desenho(matriz_quatro, pio, sm);
+    imprimir_numero(pio, sm, matriz_quatro);
 }
 
 void n_cinco(PIO pio, uint sm)
 {
     Matriz_leds_config matriz_cinco = {
-        //   Coluna 0         Coluna 1         Coluna 2         Coluna 3         Coluna 4
-        // R    G    B      R    G    B      R    G    B      R    G    B      R    G    B
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 0
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, // Linha 1
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 2
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 3
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 4
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 0
+        {RGB_OFF, RGB_BLUE, RGB_OFF, RGB_OFF, RGB_OFF}, // Linha 1
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 2
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 3
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 4
     };
-    imprimir_desenho(matriz_cinco, pio, sm);
+    imprimir_numero(pio, sm, matriz_cinco);
 }
 
 void n_seis(PIO pio, uint sm)
 {
     Matriz_leds_config matriz_seis = {
-        //   Coluna 0         Coluna 1         Coluna 2         Coluna 3         Coluna 4
-        // R    G    B      R    G    B      R    G    B      R    G    B      R    G    B
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 0
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}}, // Linha 1
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 2
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 3
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 4
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 0
+        {RGB_OFF, RGB_BLUE, RGB_OFF, RGB_OFF, RGB_OFF}, // Linha 1
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 2
+        {RGB_OFF, RGB_BLUE, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 3
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 4
     };
-    
-    imprimir_desenho(matriz_seis, pio, sm);
+    imprimir_numero(pio, sm, matriz_seis);
 }
 
 void n_sete(PIO pio, uint sm)
 {
     Matriz_leds_config matriz_sete = {
-        //   Coluna 0         Coluna 1         Coluna 2         Coluna 3         Coluna 4
-        // R    G    B      R    G    B      R    G    B      R    G    B      R    G    B
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 0
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 1
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 2
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 3
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 4
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 0
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 1
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 2
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 3
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 4
     };
-    
-    imprimir_desenho(matriz_sete, pio, sm);
+    imprimir_numero(pio, sm, matriz_sete);
 }
 
 void n_oito(PIO pio, uint sm)
 {
     Matriz_leds_config matriz_oito = {
-        //   Coluna 0         Coluna 1         Coluna 2         Coluna 3         Coluna 4
-        // R    G    B      R    G    B      R    G    B      R    G    B      R    G    B
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 0
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 1
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 2
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 3
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 4
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 0
+        {RGB_OFF, RGB_BLUE, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 1
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 2
+        {RGB_OFF, RGB_BLUE, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 3
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 4
     };
-    
-    imprimir_desenho(matriz_oito, pio, sm);
+    imprimir_numero(pio, sm, matriz_oito);
 }
 
 void n_nove(PIO pio, uint sm)
 {
     Matriz_leds_config matriz_nove = {
-        //   Coluna 0         Coluna 1         Coluna 2         Coluna 3         Coluna 4
-        // R    G    B      R    G    B      R    G    B      R    G    B      R    G    B
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 0
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 1
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 2
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 3
-        {{0.0, 0.0, 0.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 1.0}, {0.0, 0.0, 0.0}}, // Linha 4
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 0
+        {RGB_OFF, RGB_BLUE, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 1
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 2
+        {RGB_OFF, RGB_OFF, RGB_OFF, RGB_BLUE, RGB_OFF}, // Linha 3
+        {RGB_OFF, RGB_BLUE, RGB_BLUE, RGB_BLUE, RGB_OFF}, // Linha 4
     };
-    
-    imprimir_desenho(matriz_nove, pio, sm);
+    imprimir_numero(pio, sm, matriz_nove);
 }
 
 int main()
@@ -294,7 +283,7 @@ int main()
     configurar_botao(BUTTON_B_PIN);
     configurar_botao(BUTTON_C_PIN);
 
-    // Interrompe caso o botão for pressionado
+    // Interrupção caso o botão for pressionado
     gpio_set_irq_enabled_with_callback(BUTTON_A_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
     gpio_set_irq_enabled_with_callback(BUTTON_B_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
     gpio_set_irq_enabled_with_callback(BUTTON_C_PIN, GPIO_IRQ_EDGE_FALL, true, &gpio_irq_handler);
@@ -305,15 +294,9 @@ int main()
     
     while (true)
     {   
-        piscar_led();   //Ativa a função de piscar o led
+        piscar_led();   // Ativa a função de piscar o led
 
-        if (numero > 9) {numero--;} //Limita o número
-        if (numero < 0) {numero++;} //Limita o número
-        
-        if (modo==true) //BUTTON C desliga os leds e entra em bootsel
-        {
-            desligar(pio, sm);
-        }
+        if (modo==true) {desligar(pio, sm);} // Deliga os leds e entra em bootsel
 
         // Chamando as funções de acordo com o valor do número
         switch(numero) {
@@ -350,5 +333,3 @@ int main()
         } 
     } 
 }
-
-
